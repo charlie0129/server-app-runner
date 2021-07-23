@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Display style setting
 BOLD="\033[1m"
 RED="\033[1;31m"
 GREEN="\033[1;32m"
@@ -18,6 +17,21 @@ SKIP_BUILD=false
 SILENT=false
 VERBOSE=false
 
+function usage() {
+    echo -e "server-app-runner"
+    echo -e ""
+    echo -e "./runner.sh"
+    echo -e "\t -h --help: show this help and exit"
+    echo -e "\t start: build your project and then start it"
+    echo -e "\t build: build your project"
+    echo -e "\t stop: stop a previously started background process"
+    echo -e "\t update: update your project"
+    echo -e "\t --skip-build: skip build process when during \"start\""
+    echo -e "\t -s --silent: start project in the background and return"
+    echo -e "\t -v --verbose: trun on verbose mode"
+    echo -e ""
+}
+
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -25,34 +39,40 @@ while [[ $# -gt 0 ]]; do
     case $key in
     start)
         COMMAND=start
-        shift # past argument
+        shift
         ;;
     build)
         COMMAND=build
-        shift # past argument
+        shift
         ;;
     stop)
         COMMAND=stop
-        shift # past argument
+        shift
         ;;
     update)
-        COMMAND=stop
-        shift # past argument
+        COMMAND=update
+        shift
         ;;
     --skip-build)
         SKIP_BUILD=true
-        shift # past argument
+        shift
         ;;
     -s | --silent)
         SILENT=true
-        shift # past argument
+        shift
         ;;
     -v | --verbose)
         VERBOSE=true
         shift
         ;;
-    *) # unknown option
+    -h | --help)
+        usage
+        exit 0
+        ;;
+    *)
         echo -e "${HEADER_ERROR}Unknown argument: $1"
+        echo ""
+        usage
         exit 1
         ;;
     esac
@@ -64,6 +84,16 @@ if [ "${VERBOSE}" = true ]; then
     echo -e "${HEADER_INFO}operation  = ${YELLOW}${COMMAND}${OFF}"
     echo -e "${HEADER_INFO}skip_build = ${YELLOW}${SKIP_BUILD}${OFF}"
     echo -e "${HEADER_INFO}silent     = ${YELLOW}${SILENT}${OFF}"
+fi
+
+if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
+    echo -e "${HEADER_ERROR}You can only pair --skip-build with \"start\""
+    exit 1
+fi
+
+if [ "${SILENT}" = true ] && [ "${COMMAND}" != start ]; then
+    echo -e "${HEADER_ERROR}You can only pair -s --silent with \"start\""
+    exit 1
 fi
 
 handle_error() {
@@ -111,7 +141,12 @@ build)
     build
     ;;
 stop)
-    kill "$(cat ./${PID_FILE_NAME})"
+    PID="$(cat ./${PID_FILE_NAME})"
+    IMAGE="$(ps -p "${PID}" -o comm=)"
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}killing ${IMAGE} ${PID}"
+    fi
+    kill "${PID}" || handle_error "kill"
     ;;
 update)
     bash ./runner_scripts/update.sh || handle_error "update"

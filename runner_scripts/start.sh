@@ -1,4 +1,4 @@
-sleep 3
+sleep 15
 # ↑↑↑↑ command up here ↑↑↑ 
 
 # Write the command to start you application on the first line
