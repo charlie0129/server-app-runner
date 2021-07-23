@@ -21,14 +21,14 @@ function usage() {
     echo -e "server-app-runner"
     echo -e ""
     echo -e "./runner.sh"
-    echo -e "\t -h --help: show this help and exit"
-    echo -e "\t start: build your project and then start it"
-    echo -e "\t build: build your project"
-    echo -e "\t stop: stop a previously started background process"
-    echo -e "\t update: update your project"
+    echo -e "\t start:        build your project and then start it"
+    echo -e "\t build:        build your project"
+    echo -e "\t stop:         stop a previously started background process"
+    echo -e "\t update:       update your project"
     echo -e "\t --skip-build: skip build process when during \"start\""
-    echo -e "\t -s --silent: start project in the background and return"
+    echo -e "\t -s --silent:  start project in the background and return"
     echo -e "\t -v --verbose: trun on verbose mode"
+    echo -e "\t -h --help:    show this help and exit"
     echo -e ""
 }
 
@@ -82,6 +82,10 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [ "${VERBOSE}" = true ]; then
     echo -e "${HEADER_INFO}operation  = ${YELLOW}${COMMAND}${OFF}"
+    if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
+        echo -e "${HEADER_ERROR}You can only pair --skip-build with \"start\""
+        exit 1
+    fi
     echo -e "${HEADER_INFO}skip_build = ${YELLOW}${SKIP_BUILD}${OFF}"
     echo -e "${HEADER_INFO}silent     = ${YELLOW}${SILENT}${OFF}"
 fi
@@ -144,12 +148,15 @@ stop)
     PID="$(cat ./${PID_FILE_NAME})"
     IMAGE="$(ps -p "${PID}" -o comm=)"
     if [ "${VERBOSE}" = true ]; then
-        echo -e "${HEADER_INFO}killing ${IMAGE} ${PID}"
+        echo -e "${HEADER_INFO}killing \"${IMAGE}\" ${PID}"
     fi
     kill "${PID}" || handle_error "kill"
     ;;
 update)
     bash ./runner_scripts/update.sh || handle_error "update"
     ;;
-*) ;;
+*)
+    echo -e "${HEADER_ERROR}You need to specify an operation"
+    usage
+    ;;
 esac
