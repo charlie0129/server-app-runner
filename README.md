@@ -32,7 +32,3 @@ This tool will make the web server run in the background silently and provide op
     	 -h --help:    show this help and exit
     ```
 
-    
-
-[How do I parse command line arguments in Bash? - Stack Overflow](https://stackoverflow.com/questions/192249/how-do-i-parse-command-line-arguments-in-bash)
-
