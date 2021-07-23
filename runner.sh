@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Colors
 BOLD="\033[1m"
 RED="\033[1;31m"
 GREEN="\033[1;32m"
@@ -11,8 +12,10 @@ HEADER_INFO="${BLUE}[INFO]$OFF "
 HEADER_WARN="${YELLOW}[WARN]$OFF "
 HEADER_ERROR="${RED}[ERROR]$OFF "
 
+# The file used to store the pid of a proviously started background process
 PID_FILE_NAME="started_process.pid"
 
+# Default state
 SKIP_BUILD=false
 SILENT=false
 VERBOSE=false
@@ -32,10 +35,10 @@ function usage() {
     echo -e ""
 }
 
+# Parse auguments
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     key="$1"
-
     case $key in
     start)
         COMMAND=start
@@ -78,8 +81,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-set -- "${POSITIONAL[@]}" # restore positional parameters
+# restore positional parameters
+set -- "${POSITIONAL[@]}"
 
+# Show configuration (verbose)
 if [ "${VERBOSE}" = true ]; then
     echo -e "${HEADER_INFO}operation  = ${YELLOW}${COMMAND}${OFF}"
     if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
@@ -125,7 +130,9 @@ start() {
     START_COMMAND="$(head -n1 ./runner_scripts/start.sh)"
 
     if [ "${SILENT}" = true ]; then
+        # This will start the process and store the pid of the process
         START_COMMAND_PID="${START_COMMAND} & echo \$! > ./${PID_FILE_NAME} &"
+        # This will let it run in the background
         START_COMMAND_NOHUP="nohup bash -c '${START_COMMAND_PID}' > start.out 2> start.err < /dev/null &"
         eval "${START_COMMAND_NOHUP}"
     else
