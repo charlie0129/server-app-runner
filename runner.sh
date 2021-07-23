@@ -24,7 +24,7 @@ function usage() {
     echo -e "server-app-runner"
     echo -e ""
     echo -e "./runner.sh"
-    echo -e "\t start:        build your project and then start it"
+    echo -e "\t start:        build your project, stop a previous process, then start a new one"
     echo -e "\t build:        build your project"
     echo -e "\t stop:         stop a previously started background process"
     echo -e "\t update:       update your project"
@@ -141,23 +141,28 @@ start() {
 
 }
 
+stop() {
+    PID="$(cat ./${PID_FILE_NAME})"
+    IMAGE="$(ps -p "${PID}" -o comm=)"
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}killing \"${IMAGE}\" ${PID}"
+    fi
+    kill "${PID}"
+}
+
 case $COMMAND in
 start)
     if [ "${SKIP_BUILD}" = false ]; then
         build
     fi
+    stop
     start
     ;;
 build)
     build
     ;;
 stop)
-    PID="$(cat ./${PID_FILE_NAME})"
-    IMAGE="$(ps -p "${PID}" -o comm=)"
-    if [ "${VERBOSE}" = true ]; then
-        echo -e "${HEADER_INFO}killing \"${IMAGE}\" ${PID}"
-    fi
-    kill "${PID}" || handle_error "kill"
+    stop
     ;;
 update)
     bash ./runner_scripts/update.sh || handle_error "update"
