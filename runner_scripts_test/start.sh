@@ -1,4 +1,4 @@
-sleep 15
+echo "hello from test"
 # ↑↑↑↑ command up here ↑↑↑ 
 
 # Write the command to start you application on the first line

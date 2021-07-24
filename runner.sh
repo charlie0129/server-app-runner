@@ -35,6 +35,24 @@ function usage() {
     echo -e ""
 }
 
+# Check if a string is a valid environment
+check_is_valid_env() {
+    case $1 in
+    prod) ;;
+    dev) ;;
+    test) ;;
+    "" | --skip-build | -s | --silent | -v | --verbose)
+        return 1
+        ;;
+    *)
+        echo -e "${HEADER_ERROR}there are only prod, dev, and test environments"
+        exit 1
+        ;;
+    esac
+
+    return 0
+}
+
 # Parse auguments
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
@@ -42,10 +60,14 @@ while [[ $# -gt 0 ]]; do
     case $key in
     start)
         COMMAND=start
+        RUNNER_ENV="$2"
+        check_is_valid_env "$2" && shift
         shift
         ;;
     build)
         COMMAND=build
+        RUNNER_ENV="$2"
+        check_is_valid_env "$2" && shift
         shift
         ;;
     stop)
@@ -54,6 +76,8 @@ while [[ $# -gt 0 ]]; do
         ;;
     update)
         COMMAND=update
+        RUNNER_ENV="$2"
+        check_is_valid_env "$2" && shift
         shift
         ;;
     --skip-build)
@@ -84,17 +108,7 @@ done
 # restore positional parameters
 set -- "${POSITIONAL[@]}"
 
-# Show configuration (verbose)
-if [ "${VERBOSE}" = true ]; then
-    echo -e "${HEADER_INFO}operation  = ${YELLOW}${COMMAND}${OFF}"
-    if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
-        echo -e "${HEADER_ERROR}You can only pair --skip-build with \"start\""
-        exit 1
-    fi
-    echo -e "${HEADER_INFO}skip_build = ${YELLOW}${SKIP_BUILD}${OFF}"
-    echo -e "${HEADER_INFO}silent     = ${YELLOW}${SILENT}${OFF}"
-fi
-
+# Check arguments
 if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
     echo -e "${HEADER_ERROR}You can only pair --skip-build with \"start\""
     exit 1
@@ -105,6 +119,33 @@ if [ "${SILENT}" = true ] && [ "${COMMAND}" != start ]; then
     exit 1
 fi
 
+# Check environment (RUNNER_ENV)
+case $RUNNER_ENV in
+prod) ;;
+dev) ;;
+test) ;;
+"" | --skip-build | -s | --silent | -v | --verbose)
+    if [ "${COMMAND}" != stop ]; then
+        echo -e "${HEADER_WARN}no environment set, falling back to prod"
+    fi
+    RUNNER_ENV=prod
+    ;;
+*)
+    echo -e "${HEADER_ERROR}there are only prod, dev, and test environments"
+    exit 1
+    ;;
+esac
+
+# Show configuration (verbose)
+if [ "${VERBOSE}" = true ]; then
+    echo -e "${HEADER_INFO}operation   = ${YELLOW}${COMMAND}${OFF}"
+    echo -e "${HEADER_INFO}environment = ${YELLOW}${RUNNER_ENV}${OFF}"
+    echo -e "${HEADER_INFO}skip_build  = ${YELLOW}${SKIP_BUILD}${OFF}"
+    echo -e "${HEADER_INFO}silent      = ${YELLOW}${SILENT}${OFF}"
+fi
+
+# Define some functions
+
 handle_error() {
     echo -e "${HEADER_ERROR}$1 failed"
     exit 1
@@ -114,20 +155,20 @@ build() {
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}building..."
     fi
-    bash ./runner_scripts/build.sh || handle_error "build"
+    bash ./runner_scripts_"${RUNNER_ENV}"/build.sh || handle_error "build"
 }
 
 start() {
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}pre-starting..."
     fi
-    bash ./runner_scripts/pre_start.sh || handle_error "pre-start"
+    bash ./runner_scripts_"${RUNNER_ENV}"/pre_start.sh || handle_error "pre-start"
 
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}application starting..."
     fi
 
-    START_COMMAND="$(head -n1 ./runner_scripts/start.sh)"
+    START_COMMAND="$(head -n1 ./runner_scripts_"${RUNNER_ENV}"/start.sh)"
 
     if [ "${SILENT}" = true ]; then
         # This will start the process and store the pid of the process
@@ -150,12 +191,13 @@ stop() {
     kill "${PID}"
 }
 
+# Actually run the scripts
 case $COMMAND in
 start)
     if [ "${SKIP_BUILD}" = false ]; then
         build
     fi
-    stop
+    stop 2>/dev/null
     start
     ;;
 build)
@@ -165,7 +207,7 @@ stop)
     stop
     ;;
 update)
-    bash ./runner_scripts/update.sh || handle_error "update"
+    bash ./runner_scripts_"${RUNNER_ENV}"/update.sh || handle_error "update"
     ;;
 *)
     echo -e "${HEADER_ERROR}You need to specify an operation"
