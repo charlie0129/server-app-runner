@@ -145,7 +145,7 @@ stop() {
     PID="$(cat ./${PID_FILE_NAME})"
     IMAGE="$(ps -p "${PID}" -o comm=)"
     if [ "${VERBOSE}" = true ]; then
-        echo -e "${HEADER_INFO}killing \"${IMAGE}\" ${PID}"
+        echo -e "${HEADER_INFO}killing pid=${PID} image=\"${IMAGE}\" "
     fi
     kill "${PID}"
 }
