@@ -2,6 +2,7 @@
 
 # Colors
 BOLD="\033[1m"
+GREY="\033[1;30m"
 RED="\033[1;31m"
 GREEN="\033[1;32m"
 YELLOW="\033[1;33m"
@@ -20,6 +21,11 @@ SKIP_BUILD=false
 SILENT=false
 VERBOSE=false
 
+# List environments in current directory
+ENV_LIST=$(ls -d runner_scripts*)
+ENV_LIST=${ENV_LIST[@]//runner_scripts_/}
+ENV_LIST=(${ENV_LIST})
+
 function usage() {
     echo -e "server-app-runner"
     echo -e ""
@@ -35,22 +41,29 @@ function usage() {
     echo -e ""
 }
 
+containsElement () {
+  local e match="$1"
+  shift
+  for e; do [[ "$e" == "$match" ]] && return 0; done
+  return 1
+}
+
 # Check if a string is a valid environment
 check_is_valid_env() {
+    # if $1 is in ENV_LIST
+    if containsElement "$1" "${ENV_LIST[@]}"; then
+        return 0
+    fi
+
     case $1 in
-    prod) ;;
-    dev) ;;
-    test) ;;
     "" | --skip-build | -s | --silent | -v | --verbose)
         return 1
         ;;
     *)
-        echo -e "${HEADER_ERROR}there are only prod, dev, and test environments"
+        echo -e "${HEADER_ERROR}Unknown environment: ${YELLOW}$1${OFF}. Available environment(s): ${GREEN}${ENV_LIST[@]}${OFF}"
         exit 1
         ;;
     esac
-
-    return 0
 }
 
 # Parse auguments
@@ -121,27 +134,27 @@ fi
 
 # Check environment (RUNNER_ENV)
 case $RUNNER_ENV in
-prod) ;;
-dev) ;;
-test) ;;
 "" | --skip-build | -s | --silent | -v | --verbose)
     if [ "${COMMAND}" != stop ]; then
-        echo -e "${HEADER_WARN}no environment set, falling back to prod"
+        echo -e "${HEADER_WARN}No environment set, falling back to ${ENV_LIST[0]}"
     fi
-    RUNNER_ENV=prod
+    RUNNER_ENV=${ENV_LIST[0]}
     ;;
 *)
-    echo -e "${HEADER_ERROR}there are only prod, dev, and test environments"
-    exit 1
     ;;
 esac
 
 # Show configuration (verbose)
 if [ "${VERBOSE}" = true ]; then
-    echo -e "${HEADER_INFO}operation   = ${YELLOW}${COMMAND}${OFF}"
-    echo -e "${HEADER_INFO}environment = ${YELLOW}${RUNNER_ENV}${OFF}"
-    echo -e "${HEADER_INFO}skip_build  = ${YELLOW}${SKIP_BUILD}${OFF}"
-    echo -e "${HEADER_INFO}silent      = ${YELLOW}${SILENT}${OFF}"
+    echo -e "${HEADER_INFO}operation   = ${GREEN}${COMMAND}${OFF}"
+
+    echo -e "${HEADER_INFO}environment = ${GREEN}${RUNNER_ENV}${OFF}"
+
+    COLOR=$([ "${SKIP_BUILD}" = true ] && echo "${GREEN}" || echo "${GREY}")
+    echo -e "${HEADER_INFO}skip_build  = ${COLOR}${SKIP_BUILD}${OFF}"
+
+    COLOR=$([ "${SILENT}" = true ] && echo "${GREEN}" || echo "${GREY}")
+    echo -e "${HEADER_INFO}silent      = ${COLOR}${SILENT}${OFF}"
 fi
 
 # Define some functions
