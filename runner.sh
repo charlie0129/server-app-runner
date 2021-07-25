@@ -33,14 +33,15 @@ ENV_LIST=(${ENV_LIST})
 function usage() {
     echo -e "server-app-runner"
     echo -e ""
-    echo -e "./runner.sh"
+    echo -e "./runner.sh start | build | stop | update [enviromnent] [-s | --silent] [--skip-build] [-v | --verbose] [-h | --help]"
     echo -e "\t start:        build your project, stop a previous process, then start a new one"
     echo -e "\t build:        build your project"
     echo -e "\t stop:         stop a previously started background process"
     echo -e "\t update:       update your project"
+    echo -e "\t environment:  your custom script environments, like dev, prod, etc."
     echo -e "\t --skip-build: skip build process when during \"start\""
     echo -e "\t -s --silent:  start project in the background and return"
-    echo -e "\t -v --verbose: trun on verbose mode"
+    echo -e "\t -v --verbose: turn on verbose mode"
     echo -e "\t -h --help:    show this help and exit"
     echo -e ""
 }
