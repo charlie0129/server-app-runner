@@ -191,6 +191,13 @@ stop() {
     bash ./runner_scripts_"${RUNNER_ENV}"/stop.sh || handle_error "stop"
 }
 
+update() {
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}updating application..."
+    fi
+    bash ./runner_scripts_"${RUNNER_ENV}"/update.sh || handle_error "update"
+}
+
 # Actually run the scripts
 case $COMMAND in
 start)
@@ -207,7 +214,7 @@ stop)
     stop
     ;;
 update)
-    bash ./runner_scripts_"${RUNNER_ENV}"/update.sh || handle_error "update"
+    update
     ;;
 *)
     echo -e "${HEADER_ERROR}You need to specify an operation"
