@@ -22,7 +22,11 @@ SILENT=false
 VERBOSE=false
 
 # List environments in current directory
-ENV_LIST=$(ls -d runner_scripts*)
+ENV_LIST=$(ls -d runner_scripts_* 2> /dev/null)
+if [ "${ENV_LIST}" = "" ]; then
+    echo -e "${HEADER_ERROR}Missing runner scripts. You must have runner scripts for at least one environment."
+    exit 1
+fi
 ENV_LIST=${ENV_LIST[@]//runner_scripts_/}
 ENV_LIST=(${ENV_LIST})
 
@@ -146,9 +150,9 @@ esac
 
 # Show configuration (verbose)
 if [ "${VERBOSE}" = true ]; then
-    echo -e "${HEADER_INFO}operation   = ${GREEN}${COMMAND}${OFF}"
+    echo -e "${HEADER_INFO}operation   = ${BLUE}${COMMAND}${OFF}"
 
-    echo -e "${HEADER_INFO}environment = ${GREEN}${RUNNER_ENV}${OFF}"
+    echo -e "${HEADER_INFO}environment = ${BLUE}${RUNNER_ENV}${OFF}"
 
     COLOR=$([ "${SKIP_BUILD}" = true ] && echo "${GREEN}" || echo "${GREY}")
     echo -e "${HEADER_INFO}skip_build  = ${COLOR}${SKIP_BUILD}${OFF}"
