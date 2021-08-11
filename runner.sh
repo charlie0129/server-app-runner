@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Repository: https://github.com/charlie0129/server-app-runner
+
 # Colors
 export BOLD="\033[1m"
 export GREY="\033[1;30m"
@@ -13,6 +15,9 @@ export HEADER_INFO="${BLUE}[INFO]$OFF "
 export HEADER_WARN="${YELLOW}[WARN]$OFF "
 export HEADER_ERROR="${RED}[ERROR]$OFF "
 
+# The directory that contains the runner scripts (like `runner_scripts_prod`, etc.)
+export RUNNER_SCRIPT_DIR="./"
+
 # The file used to store the pid of a proviously started background process
 export PID_FILE_NAME="started_process.pid"
 
@@ -22,12 +27,12 @@ export DETACH=false
 export VERBOSE=false
 
 # List environments in current directory
-ENV_LIST=$(ls -d runner_scripts_* 2>/dev/null)
+ENV_LIST=$(ls -d ${RUNNER_SCRIPT_DIR}runner_scripts_* 2>/dev/null)
 if [ "${ENV_LIST}" = "" ]; then
     echo -e "${HEADER_ERROR}Missing runner scripts. You must have runner scripts for at least one environment."
     exit 1
 fi
-ENV_LIST=${ENV_LIST[@]//runner_scripts_/}
+ENV_LIST=${ENV_LIST[@]//${RUNNER_SCRIPT_DIR}runner_scripts_/}
 ENV_LIST=(${ENV_LIST})
 
 function usage() {
@@ -174,28 +179,28 @@ build() {
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}building..."
     fi
-    bash ./runner_scripts_"${RUNNER_ENV}"/build.sh || handle_error "build"
+    bash ${RUNNER_SCRIPT_DIR}runner_scripts_"${RUNNER_ENV}"/build.sh || handle_error "build"
 }
 
 start() {
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}application starting..."
     fi
-    bash ./runner_scripts_"${RUNNER_ENV}"/start.sh || handle_error "start"
+    bash ${RUNNER_SCRIPT_DIR}runner_scripts_"${RUNNER_ENV}"/start.sh || handle_error "start"
 }
 
 stop() {
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}stopping application..."
     fi
-    bash ./runner_scripts_"${RUNNER_ENV}"/stop.sh || handle_error "stop"
+    bash ${RUNNER_SCRIPT_DIR}runner_scripts_"${RUNNER_ENV}"/stop.sh || handle_error "stop"
 }
 
 update() {
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}updating application..."
     fi
-    bash ./runner_scripts_"${RUNNER_ENV}"/update.sh || handle_error "update"
+    bash ${RUNNER_SCRIPT_DIR}runner_scripts_"${RUNNER_ENV}"/update.sh || handle_error "update"
 }
 
 # Actually run the scripts
