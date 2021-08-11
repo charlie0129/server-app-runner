@@ -1,6 +1,16 @@
 #!/bin/bash
 
-# Repository: https://github.com/charlie0129/server-app-runner
+#+-------------------------------------------------------------------------
+#
+#  server-app-runner
+#
+#  Repository: https://github.com/charlie0129/server-app-runner
+#
+#  Charlie Chiang
+#
+#--------------------------------------------------------------------------
+
+# Variables that you may need to edit will have comments that starts with `----``
 
 # Colors
 export BOLD="\033[1m"
@@ -10,12 +20,11 @@ export GREEN="\033[1;32m"
 export YELLOW="\033[1;33m"
 export BLUE="\033[1;34m"
 export OFF="\033[m"
-
 export HEADER_INFO="${BLUE}[INFO]$OFF "
 export HEADER_WARN="${YELLOW}[WARN]$OFF "
 export HEADER_ERROR="${RED}[ERROR]$OFF "
 
-# The directory that contains the runner scripts (like `runner_scripts_prod`, etc.)
+# ---- The directory that contains the runner scripts (like `runner_scripts_prod`, etc.)
 export RUNNER_SCRIPT_DIR="./"
 
 # The file used to store the pid of a proviously started background process
@@ -35,8 +44,8 @@ fi
 ENV_LIST=${ENV_LIST[@]//${RUNNER_SCRIPT_DIR}runner_scripts_/}
 ENV_LIST=(${ENV_LIST})
 
-# Fallback environment if no env is specified by the user (by default is the first one in the env list)
-export DEFAULT_ENV=${ENV_LIST[0]}
+# ---- Fallback environment if no env is specified by the user (by default is the first one in the env list)
+DEFAULT_ENV=${ENV_LIST[0]}
 
 function usage() {
     echo -e "server-app-runner"
