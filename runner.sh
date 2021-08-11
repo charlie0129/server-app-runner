@@ -35,6 +35,9 @@ fi
 ENV_LIST=${ENV_LIST[@]//${RUNNER_SCRIPT_DIR}runner_scripts_/}
 ENV_LIST=(${ENV_LIST})
 
+# Fallback environment if no env is specified by the user (by default is the first one in the env list)
+export DEFAULT_ENV=${ENV_LIST[0]}
+
 function usage() {
     echo -e "server-app-runner"
     echo -e ""
@@ -148,9 +151,9 @@ fi
 case $RUNNER_ENV in
 "" | --skip-build | -d | --detach | -v | --verbose)
     if [ "${COMMAND}" != stop ]; then
-        echo -e "${HEADER_WARN}No environment set, falling back to ${ENV_LIST[0]}"
+        echo -e "${HEADER_WARN}No environment set, falling back to ${DEFAULT_ENV}"
     fi
-    RUNNER_ENV=${ENV_LIST[0]}
+    RUNNER_ENV=${DEFAULT_ENV}
     ;;
 *) ;;
 esac
