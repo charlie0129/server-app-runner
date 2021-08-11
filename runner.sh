@@ -10,7 +10,7 @@
 #
 #--------------------------------------------------------------------------
 
-# Variables that you may need to edit will have comments that starts with `----``
+# Variables that you may need to edit will have comments that starts with `----`
 
 # Colors
 export BOLD="\033[1m"
