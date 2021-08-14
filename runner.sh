@@ -88,6 +88,11 @@ check_is_valid_env() {
     esac
 }
 
+# Load environment variables
+if [ -f .env ]; then
+  export $(echo $(cat .env | sed 's/#.*//g'| xargs) | envsubst)
+fi
+
 # Parse auguments
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
