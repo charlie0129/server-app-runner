@@ -35,6 +35,8 @@ export SKIP_BUILD=false
 export DETACH=false
 export VERBOSE=false
 
+ENV_FILE=.env
+
 # List environments in current directory
 ENV_LIST=$(ls -d ${RUNNER_SCRIPT_DIR}runner_scripts_* 2>/dev/null)
 if [ "${ENV_LIST}" = "" ]; then
@@ -78,7 +80,7 @@ check_is_valid_env() {
     fi
 
     case $1 in
-    "" | --skip-build | -d | --detach | -v | --verbose)
+    "" | --skip-build | -d | --detach | -v | --verbose | --file)
         return 1
         ;;
     *)
@@ -87,11 +89,6 @@ check_is_valid_env() {
         ;;
     esac
 }
-
-# Load environment variables
-if [ -f .env ]; then
-  export $(echo $(cat .env | sed 's/#.*//g'| xargs) | envsubst)
-fi
 
 # Parse auguments
 POSITIONAL=()
@@ -122,6 +119,11 @@ while [[ $# -gt 0 ]]; do
         check_is_valid_env "$2" && shift
         shift
         ;;
+    --file)
+        ENV_FILE="$2"
+        shift
+        shift
+        ;;
     --skip-build)
         SKIP_BUILD=true
         shift
@@ -150,6 +152,11 @@ done
 # restore positional parameters
 set -- "${POSITIONAL[@]}"
 
+# Load environment variables
+if [ -f "${ENV_FILE}" ]; then
+  export $(echo $(cat "${ENV_FILE}" | sed 's/#.*//g'| xargs) | envsubst)
+fi
+
 # Check arguments
 if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
     echo -e "${HEADER_ERROR}You can only pair --skip-build with \"start\""
@@ -163,7 +170,7 @@ fi
 
 # Check environment (RUNNER_ENV)
 case $RUNNER_ENV in
-"" | --skip-build | -d | --detach | -v | --verbose)
+"" | --skip-build | -d | --detach | -v | --verbose | --file)
     if [ "${COMMAND}" != stop ]; then
         echo -e "${HEADER_WARN}No environment set, falling back to ${DEFAULT_ENV}"
     fi
