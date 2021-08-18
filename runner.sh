@@ -24,6 +24,7 @@ export HEADER_INFO="${BLUE}[INFO]$OFF "
 export HEADER_WARN="${YELLOW}[WARN]$OFF "
 export HEADER_ERROR="${RED}[ERROR]$OFF "
 
+# [Customizable]
 # ---- The directory that contains the runner scripts (like `runner_scripts_prod`, etc.)
 export RUNNER_SCRIPT_DIR="./"
 
@@ -46,13 +47,14 @@ fi
 ENV_LIST=${ENV_LIST[@]//${RUNNER_SCRIPT_DIR}runner_scripts_/}
 ENV_LIST=(${ENV_LIST})
 
+# [Customizable]
 # ---- Fallback environment if no env is specified by the user (by default is the first one in the env list)
 DEFAULT_ENV=${ENV_LIST[0]}
 
 function usage() {
     echo -e "server-app-runner"
     echo -e ""
-    echo -e "./runner.sh start | build | stop | update [enviromnent] [-d | --detach] [--skip-build] [-v | --verbose] [-h | --help]"
+    echo -e "./runner.sh start | build | stop | update [enviromnent] [-d | --detach] [--skip-build] [-v | --verbose] [--file env] [-h | --help]"
     echo -e "\t start:        build your project, stop a previous process, then start a new one"
     echo -e "\t build:        build your project"
     echo -e "\t stop:         stop a previously started background process"
@@ -61,6 +63,7 @@ function usage() {
     echo -e "\t --skip-build: skip build process when during \"start\""
     echo -e "\t -d --detach:  start project in the background and return"
     echo -e "\t -v --verbose: turn on verbose mode"
+    echo -e "\t --file:       choose env file"
     echo -e "\t -h --help:    show this help and exit"
     echo -e ""
 }
