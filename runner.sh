@@ -152,11 +152,6 @@ done
 # restore positional parameters
 set -- "${POSITIONAL[@]}"
 
-# Load environment variables
-if [ -f "${ENV_FILE}" ]; then
-  export $(echo $(cat "${ENV_FILE}" | sed 's/#.*//g'| xargs) | envsubst)
-fi
-
 # Check arguments
 if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
     echo -e "${HEADER_ERROR}You can only pair --skip-build with \"start\""
@@ -166,6 +161,14 @@ fi
 if [ "${DETACH}" = true ] && [ "${COMMAND}" != start ]; then
     echo -e "${HEADER_ERROR}You can only pair -d --detach with \"start\""
     exit 1
+fi
+
+# Load environment variables
+if [ -f "${ENV_FILE}" ]; then
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}loading environment variables from ${ENV_FILE}"
+    fi
+    export $(echo $(cat "${ENV_FILE}" | sed 's/#.*//g' | xargs) | envsubst)
 fi
 
 # Check environment (RUNNER_ENV)
