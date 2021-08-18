@@ -5,8 +5,8 @@ echo -e "${GREY}\tHello from prod. Stop you app here.${OFF}"
 # This is an example that will read the saved PID of a started process and stop it
 # See how to start and save PID in start.sh
 
-PID="$(cat ./${PID_FILE_NAME})"
-IMAGE="$(ps -p "${PID}" -o comm=)"
+PID="$(cat ./${PID_FILE_NAME} 2>/dev/null)"
+IMAGE="$(ps -p "${PID}" -o comm= 2>/dev/null)"
 
 if [ "${IMAGE}" != "" ]; then
     if [ "${VERBOSE}" = true ]; then
