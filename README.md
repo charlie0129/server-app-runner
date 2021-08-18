@@ -9,7 +9,7 @@ This tool will make the web server run in the background silently and provide op
 
 ## How to use
 
-1. There 4 scripts in the `runner_scripts_<environment>` directory, fill each of them with your code. They tell the main script how to build/run your app. Check out the file contents to learn the purpose of each script. (You can custom the `<environment>` and tell the runner to run scripts in the different environments.)
+1. There 4 scripts in the `runner_scripts_<environment>` directory, fill each of them with your code. They tell the main script how to build/run your app. Check out the file contents to learn the purpose of each script. (You can customize `<environment>` and tell the runner to run scripts in the different environments by adding arguments.)
 
 2. Copy `runner.sh` and `runner_scripts_*` to you project folder that you want to start in.
 
