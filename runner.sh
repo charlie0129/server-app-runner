@@ -36,7 +36,7 @@ export SKIP_BUILD=false
 export DETACH=false
 export VERBOSE=false
 
-ENV_FILE=.env
+
 
 # List environments in current directory
 ENV_LIST=$(ls -d ${RUNNER_SCRIPT_DIR}runner_scripts_* 2>/dev/null)
@@ -50,6 +50,8 @@ ENV_LIST=(${ENV_LIST})
 # [Customizable]
 # ---- Fallback environment if no env is specified by the user (by default is the first one in the env list)
 DEFAULT_ENV=${ENV_LIST[0]}
+# the .env.[mode] file associated with that env
+ENV_FILE=".env.${DEFAULT_ENV}"
 
 function usage() {
     echo -e "server-app-runner"
@@ -166,15 +168,8 @@ if [ "${DETACH}" = true ] && [ "${COMMAND}" != start ]; then
     exit 1
 fi
 
-# Load environment variables
-if [ -f "${ENV_FILE}" ]; then
-    if [ "${VERBOSE}" = true ]; then
-        echo -e "${HEADER_INFO}loading environment variables from ${ENV_FILE}"
-    fi
-    export $(echo $(cat "${ENV_FILE}" | sed 's/#.*//g' | xargs) | envsubst)
-fi
-
 # Check environment (RUNNER_ENV)
+# if the env is not vaild, the default value is used
 case $RUNNER_ENV in
 "" | --skip-build | -d | --detach | -v | --verbose | --file)
     if [ "${COMMAND}" != stop ]; then
@@ -182,8 +177,26 @@ case $RUNNER_ENV in
     fi
     RUNNER_ENV=${DEFAULT_ENV}
     ;;
-*) ;;
+*) 
+    ENV_FILE=".env.${RUNNER_ENV}"
+;;
 esac
+
+# Load environment variables from .env (always loads)
+if [ -f ".env" ]; then
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}loading environment variables from .env"
+    fi
+    export $(echo $(cat ".env" | sed 's/#.*//g' | xargs) | envsubst)
+fi
+
+# Load environment variables from .env.[mode] (only loads in that environment)
+if [ -f "${ENV_FILE}" ]; then
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}loading environment variables from ${ENV_FILE}"
+    fi
+    export $(echo $(cat "${ENV_FILE}" | sed 's/#.*//g' | xargs) | envsubst)
+fi
 
 # Show configuration (verbose)
 if [ "${VERBOSE}" = true ]; then
