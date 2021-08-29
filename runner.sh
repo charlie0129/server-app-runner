@@ -24,10 +24,6 @@ export HEADER_INFO="${BLUE}[INFO]$OFF "
 export HEADER_WARN="${YELLOW}[WARN]$OFF "
 export HEADER_ERROR="${RED}[ERROR]$OFF "
 
-# [Customizable]
-# ---- The directory that contains the runner scripts (like `runner_scripts_prod`, etc.)
-export RUNNER_SCRIPT_DIR="./"
-
 # The file used to store the pid of a proviously started background process
 export PID_FILE_NAME="started_process.pid"
 
@@ -36,6 +32,20 @@ export SKIP_BUILD=false
 export DETACH=false
 export VERBOSE=false
 
+# [Customizable]
+# ---- The directory that contains the runner scripts (like `runner_scripts_prod`, etc.)
+# You can also define RUNNER_SCRIPT_DIR in .env file
+RUNNER_SCRIPT_DIR="."
+
+# Load environment variables from .env (always loads)
+if [ -f ".env" ]; then
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}loading environment variables from .env"
+    fi
+    export $(echo $(cat ".env" | sed 's/#.*//g' | xargs) | envsubst)
+fi
+
+RUNNER_SCRIPT_DIR+="/"
 # List environments in current directory
 ENV_LIST=$(ls -d ${RUNNER_SCRIPT_DIR}runner_scripts_* 2>/dev/null)
 if [ "${ENV_LIST}" = "" ]; then
@@ -48,7 +58,9 @@ ENV_LIST=(${ENV_LIST})
 # [Customizable]
 # ---- Fallback environment if no env is specified by the user (by default is the first one in the env list)
 # You can also define DEFAULT_ENV in .env file
-DEFAULT_ENV=${ENV_LIST[0]}
+if [[ -z "${DEFAULT_ENV}" ]]; then
+    DEFAULT_ENV=${ENV_LIST[0]}
+fi
 # the .env.[mode] file associated with that env
 ENV_FILE=".env.${DEFAULT_ENV}"
 
@@ -167,14 +179,6 @@ if [ "${DETACH}" = true ] && [ "${COMMAND}" != start ]; then
     exit 1
 fi
 
-# Load environment variables from .env (always loads)
-if [ -f ".env" ]; then
-    if [ "${VERBOSE}" = true ]; then
-        echo -e "${HEADER_INFO}loading environment variables from .env"
-    fi
-    export $(echo $(cat ".env" | sed 's/#.*//g' | xargs) | envsubst)
-fi
-
 # Check environment (RUNNER_ENV)
 # if the env is not vaild, the default value is used
 case $RUNNER_ENV in
@@ -184,9 +188,9 @@ case $RUNNER_ENV in
     fi
     RUNNER_ENV=${DEFAULT_ENV}
     ;;
-*) 
+*)
     ENV_FILE=".env.${RUNNER_ENV}"
-;;
+    ;;
 esac
 
 # Load environment variables from .env.[mode] (only loads in that environment)
