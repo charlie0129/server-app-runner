@@ -36,8 +36,6 @@ export SKIP_BUILD=false
 export DETACH=false
 export VERBOSE=false
 
-
-
 # List environments in current directory
 ENV_LIST=$(ls -d ${RUNNER_SCRIPT_DIR}runner_scripts_* 2>/dev/null)
 if [ "${ENV_LIST}" = "" ]; then
@@ -49,6 +47,7 @@ ENV_LIST=(${ENV_LIST})
 
 # [Customizable]
 # ---- Fallback environment if no env is specified by the user (by default is the first one in the env list)
+# You can also define DEFAULT_ENV in .env file
 DEFAULT_ENV=${ENV_LIST[0]}
 # the .env.[mode] file associated with that env
 ENV_FILE=".env.${DEFAULT_ENV}"
@@ -168,6 +167,14 @@ if [ "${DETACH}" = true ] && [ "${COMMAND}" != start ]; then
     exit 1
 fi
 
+# Load environment variables from .env (always loads)
+if [ -f ".env" ]; then
+    if [ "${VERBOSE}" = true ]; then
+        echo -e "${HEADER_INFO}loading environment variables from .env"
+    fi
+    export $(echo $(cat ".env" | sed 's/#.*//g' | xargs) | envsubst)
+fi
+
 # Check environment (RUNNER_ENV)
 # if the env is not vaild, the default value is used
 case $RUNNER_ENV in
@@ -181,14 +188,6 @@ case $RUNNER_ENV in
     ENV_FILE=".env.${RUNNER_ENV}"
 ;;
 esac
-
-# Load environment variables from .env (always loads)
-if [ -f ".env" ]; then
-    if [ "${VERBOSE}" = true ]; then
-        echo -e "${HEADER_INFO}loading environment variables from .env"
-    fi
-    export $(echo $(cat ".env" | sed 's/#.*//g' | xargs) | envsubst)
-fi
 
 # Load environment variables from .env.[mode] (only loads in that environment)
 if [ -f "${ENV_FILE}" ]; then
