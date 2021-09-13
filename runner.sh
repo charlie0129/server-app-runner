@@ -37,7 +37,7 @@ export VERBOSE=false
 # You can also define RUNNER_SCRIPT_DIR in .env file
 RUNNER_SCRIPT_DIR="."
 
-# Load environment variables from .env and .env.local (always loads)
+# Load .env (always loads)
 if [ -f ".env" ]; then
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}loading environment variables from .env"
@@ -45,6 +45,7 @@ if [ -f ".env" ]; then
     export $(echo $(cat ".env" | sed 's/#.*//g' | xargs) | envsubst)
 fi
 
+# Load .env.local (always loads)
 if [ -f ".env.local" ]; then
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}loading environment variables from .env.local"
@@ -53,7 +54,7 @@ if [ -f ".env.local" ]; then
 fi
 
 RUNNER_SCRIPT_DIR+="/"
-# List environments in current directory
+# List environments in ${RUNNER_SCRIPT_DIR} (directory)
 ENV_LIST=$(ls -d ${RUNNER_SCRIPT_DIR}runner_scripts_* 2>/dev/null)
 if [ "${ENV_LIST}" = "" ]; then
     echo -e "${HEADER_ERROR}Missing runner scripts. You must have runner scripts for at least one environment."
@@ -186,8 +187,8 @@ if [ "${DETACH}" = true ] && [ "${COMMAND}" != start ]; then
     exit 1
 fi
 
-# Check environment (RUNNER_ENV)
-# if the env is not vaild, the default value is used
+# Check environments (the user's input)
+# if the env is not vaild, the default value (${DEFAULT_ENV}) is used
 case $RUNNER_ENV in
 "" | --skip-build | -d | --detach | -v | --verbose | --file)
     if [ "${COMMAND}" != stop ]; then
@@ -200,7 +201,7 @@ case $RUNNER_ENV in
     ;;
 esac
 
-# Load environment variables from .env.[mode] and .env.[mode].local (only loads in that environment)
+# Load .env.[mode] (only loads in that environment)
 if [ -f "${ENV_FILE}" ]; then
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}loading environment variables from ${ENV_FILE}"
@@ -208,6 +209,7 @@ if [ -f "${ENV_FILE}" ]; then
     export $(echo $(cat "${ENV_FILE}" | sed 's/#.*//g' | xargs) | envsubst)
 fi
 
+# Load .env.[mode].local (only loads in that environment)
 if [ -f "${ENV_FILE}.local" ]; then
     if [ "${VERBOSE}" = true ]; then
         echo -e "${HEADER_INFO}loading environment variables from ${ENV_FILE}.local"
@@ -215,7 +217,7 @@ if [ -f "${ENV_FILE}.local" ]; then
     export $(echo $(cat "${ENV_FILE}.local" | sed 's/#.*//g' | xargs) | envsubst)
 fi
 
-# Show configuration (verbose)
+# Show configuration (verbose option)
 if [ "${VERBOSE}" = true ]; then
     echo -e "${HEADER_INFO}operation   = ${BLUE}${COMMAND}${OFF}"
 
@@ -228,8 +230,7 @@ if [ "${VERBOSE}" = true ]; then
     echo -e "${HEADER_INFO}detach      = ${COLOR}${DETACH}${OFF}"
 fi
 
-# Define some functions
-
+# Define some functions to run the scripts
 handle_error() {
     echo -e "${HEADER_ERROR}$1 failed"
     exit 1
@@ -263,7 +264,7 @@ update() {
     bash ${RUNNER_SCRIPT_DIR}runner_scripts_"${RUNNER_ENV}"/update.sh || handle_error "update"
 }
 
-# Actually run the scripts
+# Actually run the scripts, according to different environments
 case $COMMAND in
 start)
     if [ "${SKIP_BUILD}" = false ]; then
