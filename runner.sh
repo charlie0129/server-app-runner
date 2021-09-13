@@ -40,6 +40,25 @@ export VERBOSE=false
 # You can also define RUNNER_SCRIPT_DIR in .env file
 RUNNER_SCRIPT_DIR="."
 
+# Parse auguments (only parse --verbose)
+POSITIONAL=()
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case $key in
+    -v | --verbose)
+        VERBOSE=true
+        shift
+        ;;
+    *)
+        POSITIONAL+=("$1")
+        shift
+        ;;
+    esac
+done
+
+# restore positional parameters
+set -- "${POSITIONAL[@]}"
+
 # Load .env (always loads)
 if [ -f ".env" ]; then
     if [ "${VERBOSE}" = true ]; then
@@ -67,14 +86,12 @@ fi
 ENV_LIST=${ENV_LIST[@]//${RUNNER_SCRIPT_DIR}runner_scripts_/}
 ENV_LIST=(${ENV_LIST})
 
-# [Customizable]
+# [Customizable] predefine some variables
 # ---- Fallback environment if no env is specified by the user (by default is the first one in the env list)
 # You can also define DEFAULT_ENV in .env file
 if [[ -z "${DEFAULT_ENV}" ]]; then
     DEFAULT_ENV=${ENV_LIST[0]}
 fi
-# the .env.[mode] file associated with that env
-ENV_FILE=".env.${DEFAULT_ENV}"
 
 function usage() {
     echo -e "server-app-runner"
@@ -120,7 +137,6 @@ check_is_valid_env() {
 }
 
 # Parse auguments
-POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -149,7 +165,13 @@ while [[ $# -gt 0 ]]; do
         shift
         ;;
     --file)
-        ENV_FILE="$2"
+        # Load user specified env file
+        if [ -f "$2" ]; then
+            if [ "${VERBOSE}" = true ]; then
+                echo -e "${HEADER_INFO}loading environment variables from $2"
+            fi
+            export $(echo $(cat "$2" | sed 's/#.*//g' | xargs) | envsubst)
+        fi
         shift
         shift
         ;;
@@ -159,10 +181,6 @@ while [[ $# -gt 0 ]]; do
         ;;
     -d | --detach)
         export DETACH=true
-        shift
-        ;;
-    -v | --verbose)
-        VERBOSE=true
         shift
         ;;
     -h | --help)
@@ -177,9 +195,6 @@ while [[ $# -gt 0 ]]; do
         ;;
     esac
 done
-
-# restore positional parameters
-set -- "${POSITIONAL[@]}"
 
 # Check arguments
 if [ "${SKIP_BUILD}" = true ] && [ "${COMMAND}" != start ]; then
@@ -196,9 +211,7 @@ fi
 # if the env is not vaild, the default value (${DEFAULT_ENV}) is used
 case $RUNNER_ENV in
 "" | --skip-build | -d | --detach | -v | --verbose | --file)
-    if [ "${COMMAND}" != stop ]; then
-        echo -e "${HEADER_WARN}No environment set, falling back to ${DEFAULT_ENV}"
-    fi
+    echo -e "${HEADER_WARN}No environment set, falling back to ${DEFAULT_ENV}"
     RUNNER_ENV=${DEFAULT_ENV}
     ;;
 *)
