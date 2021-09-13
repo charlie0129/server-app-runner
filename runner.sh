@@ -27,9 +27,12 @@ export HEADER_ERROR="${RED}[ERROR]$OFF "
 # The file used to store the pid of a proviously started background process
 export PID_FILE_NAME="started_process.pid"
 
-# Default state
+# Default states
+# Skip the build process in `start`
 export SKIP_BUILD=false
+# Run in the background (similar to -d/--detach in `Docker`)
 export DETACH=false
+# Print debug messages
 export VERBOSE=false
 
 # [Customizable]
@@ -53,8 +56,9 @@ if [ -f ".env.local" ]; then
     export $(echo $(cat ".env.local" | sed 's/#.*//g' | xargs) | envsubst)
 fi
 
+# Append a `/`
 RUNNER_SCRIPT_DIR+="/"
-# List environments in ${RUNNER_SCRIPT_DIR} (directory)
+# List environments in ${RUNNER_SCRIPT_DIR} (directory), e.g. ENV_LIST = [dev, prod, test]
 ENV_LIST=$(ls -d ${RUNNER_SCRIPT_DIR}runner_scripts_* 2>/dev/null)
 if [ "${ENV_LIST}" = "" ]; then
     echo -e "${HEADER_ERROR}Missing runner scripts. You must have runner scripts for at least one environment."
@@ -89,6 +93,7 @@ function usage() {
     echo -e ""
 }
 
+# Check if an array contains a certain element (helper function)
 containsElement() {
     local e match="$1"
     shift
