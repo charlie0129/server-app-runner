@@ -24,7 +24,7 @@ export HEADER_INFO="${BLUE}[INFO]$OFF "
 export HEADER_WARN="${YELLOW}[WARN]$OFF "
 export HEADER_ERROR="${RED}[ERROR]$OFF "
 
-# The file used to store the pid of a proviously started background process
+# The file used to store the pid of a previously started background process
 export PID_FILE_NAME="started_process.pid"
 
 # Default states
@@ -40,7 +40,7 @@ export VERBOSE=false
 # You can also define RUNNER_SCRIPT_DIR in .env file
 RUNNER_SCRIPT_DIR="."
 
-# Parse auguments (only parse --verbose)
+# Parse arguments (only parse --verbose)
 POSITIONAL=()
 while [[ $# -gt 0 ]]; do
     key="$1"
@@ -96,7 +96,7 @@ fi
 function usage() {
     echo -e "server-app-runner"
     echo -e ""
-    echo -e "./runner.sh start | build | stop | update [enviromnent] [-d | --detach] [--skip-build] [-v | --verbose] [--file env] [-h | --help]"
+    echo -e "./runner.sh start | build | stop | update [environment] [-d | --detach] [--skip-build] [-v | --verbose] [--file env] [-h | --help]"
     echo -e "\t start:        build your project, stop a previous process, then start a new one"
     echo -e "\t build:        build your project"
     echo -e "\t stop:         stop a previously started background process"
@@ -136,7 +136,7 @@ check_is_valid_env() {
     esac
 }
 
-# Parse auguments
+# Parse arguments
 while [[ $# -gt 0 ]]; do
     key="$1"
     case $key in
@@ -208,7 +208,7 @@ if [ "${DETACH}" = true ] && [ "${COMMAND}" != start ]; then
 fi
 
 # Check environments (the user's input)
-# if the env is not vaild, the default value (${DEFAULT_ENV}) is used
+# if the env is not valid, the default value (${DEFAULT_ENV}) is used
 case $RUNNER_ENV in
 "" | --skip-build | -d | --detach | -v | --verbose | --file)
     echo -e "${HEADER_WARN}No environment set, falling back to ${DEFAULT_ENV}"
