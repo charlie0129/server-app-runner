@@ -17,8 +17,6 @@ Other examples (projects used this script):
 
 [frog-software/frogsoft-cms: Frogsoft CMS - Universal SaaS Content Management System (github.com)](https://github.com/frog-software/frogsoft-cms)
 
-[charlie0129/fake-passport-bupt: 真正的网页版北邮出入校通行证，自己部署，自定义任何信息，与真实网页相同 (github.com)](https://github.com/charlie0129/fake-passport-bupt)
-
 ## Usage
 
 ```
