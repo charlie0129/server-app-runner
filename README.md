@@ -1,30 +1,46 @@
 # server-app-runner
-A runner script for starting a server application. I use it in my projects to simplify the startup process.
+A runner script for starting a server application. I use it in my projects to simplify the startup process and switch between different environments (typically development and production).
 
-## Example:
+## Features
+
+- Quickly switch environments and run custom scripts related to each environment;
+- Load general environment variables from `.env` (check out the example one for some settings);
+- Load environment-specific variables from `.env.[mode]`;
+- Supports `.local` files for local configurations that are kept out of the repo. These environment variables will override the non-local ones. (e.g. `.env.local`, `.env.[mode].local`)
+
+## Example
 
 Let's analyze a simple example:
 
 if you run `./runner.sh start dev` (`dev` is the environment), the following steps will be executed:
 
-1. load environment variables from `.env`
-2. load environment variables from `.env.dev`
-3. build the application (defined in `runner_scripts_[mode]/build.sh`)
-4. stop the previously started instance (defined in `runner_scripts_[mode]/stop.sh`)
-5. start a new instance (defined in `runner_scripts_[mode]/start.sh`)
+1. load environment variables from `.env` (if exists)
+2. load environment variables from `.env.dev` (if exists)
+3. load environment variables from `.env.dev.local` (if exists)
+4. build the application (defined in `runner_scripts_[mode]/build.sh`)
+5. stop the previously started instance (defined in `runner_scripts_[mode]/stop.sh`)
+6. start a new instance (defined in `runner_scripts_[mode]/start.sh`)
 
-Other examples (projects used this script):
+Examples (projects used this script):
 
 [frog-software/frogsoft-cms: Frogsoft CMS - Universal SaaS Content Management System (github.com)](https://github.com/frog-software/frogsoft-cms)
 
-[charlie0129/fake-passport-bupt: 真正的网页版北邮出入校通行证，自己部署，自定义任何信息，与真实网页相同 (github.com)](https://github.com/charlie0129/fake-passport-bupt)
+## How to use
 
+1. Copy `runner.sh` and `runner_scripts_*/` to you project folder.
+2. Since the script produces some files you may not want in a git directory (`.env.[env].local`, `started_process.pid` and outputs from stdout, stderr), you may want to merge `.gitignore` with the one in you own project directory to make sure temporary files are ignored by `git`.
+3. There 4 scripts in the `runner_scripts_<environment>/` directory, fill each of them with your code. They tell the main script how to build/run your app. Check out the file contents to learn the purpose of each script. (You can customize `<environment>`, e.g. `dev`, `prod`, `test`)
+4. Optionally, you can put all the `runner_scripts_<environment>/` directories into another directory to reduce clutter (check out the example `.env` file for instructions).
+5. Navigate to your project directory. `chmod +x runner.sh` make the script executable
+6. Use the script
+
+For example, `./runner.sh start dev -v -s --skip-build` tells the runner to run scripts in `runner_scripts_dev/` , start in the background, turn on verbose mode, and skip build process.
 ## Usage
 
 ```
 server-app-runner
 
-./runner.sh start | build | stop | update [enviroent] [-d | --detach] [--skip-build] [-v | --verbose] [--file env] [-h | --help]
+./runner.sh start | build | stop | update [environment] [-d | --detach] [--skip-build] [-v | --verbose] [--file env] [-h | --help]
          start:        build your project, stop a previous process, then start a new one
          build:        build your project
          stop:         stop a previously started background process
@@ -90,13 +106,3 @@ show additional debug messages
 #### --file
 
 load additional env file
-
-## How to use
-
-1. Copy `runner.sh` and `runner_scripts_*` to you project folder.
-2. Since the script produces some files you may not want in a git directory (`.env.[env].local`, `started_process.pid` and outputs from stdout, stderr), you may want to merge `.gitignore` with the one in you own project directory to make sure temporary files are ignored by `git`.
-3. There 4 scripts in the `runner_scripts_<environment>` directory, fill each of them with your code. They tell the main script how to build/run your app. Check out the file contents to learn the purpose of each script. (You can customize `<environment>`, e.g. `dev`, `prod`, `test`)
-4. Navigate to your project directory. `chmod +x runner.sh` make the script executable
-5. use the script
-
-For example, `./runner.sh start dev -v -s --skip-build` tells the runner to run scripts in `runner_scripts_dev` , start in the background, turn on verbose mode, and skip build process.
